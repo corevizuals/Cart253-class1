@@ -1,14 +1,15 @@
 /**
- * Frogfrogfrog
- * Pippin Barr
+ * Hungry Hungry Frogs
+ * John Compuesto
  * 
- * A game of catching flies with your frog-tongue
+ * A game of 4 frogs competing to catch the most flies
  * 
  * Instructions:
  * - Move the frog with your mouse
  * - Click to launch the tongue
  * - Catch flies
  * 
+ * Credits:
  * Made with p5
  * https://p5js.org/
  */
