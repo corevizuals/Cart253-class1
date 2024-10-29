@@ -12,6 +12,13 @@
  * Credits:
  * Made with p5
  * https://p5js.org/
+ * 
+ * 
+ * 
+ * Notes for Johnny:
+ * Variables: 1. Global Variables: Store frogs, flies and the user controlled frog's state 2. Properties for frogs and flies: Use objects to represent each frog and fly, storing properties like position, size, and the 'isUserControlled' for the player's frog.
+ * Functions: 1. Setting up the fuction: Use function to initalize the game, place the frogs and fleis on the canvas. 2. Drawing Functions: each frame, update and display the game objects in a 'draw' function. 3. Helper functions: use helper functions to extend the frog's tongue, move flies and check for collisions.
+ * 
  */
 
 "use strict";
@@ -153,31 +160,4 @@ function drawFrog() {
     push();
     fill("#00ff00");
     noStroke();
-    ellipse(frog.body.x, frog.body.y, frog.body.size);
-    pop();
-}
-
-/**
- * Handles the tongue overlapping the fly
- */
-function checkTongueFlyOverlap() {
-    // Get distance from tongue to fly
-    const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
-    // Check if it's an overlap
-    const eaten = (d < frog.tongue.size/2 + fly.size/2);
-    if (eaten) {
-        // Reset the fly
-        resetFly();
-        // Bring back the tongue
-        frog.tongue.state = "inbound";
-    }
-}
-
-/**
- * Launch the tongue on click (if it's not launched yet)
- */
-function mousePressed() {
-    if (frog.tongue.state === "idle") {
-        frog.tongue.state = "outbound";
-    }
-}
+    ellipse(frog.body.x, 
