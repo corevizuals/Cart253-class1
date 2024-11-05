@@ -12,68 +12,38 @@
  * Credits:
  * Made with p5
  * https://p5js.org/
- * 
- * 
- * 
- * Notes for Johnny:
- * Variables: 1. Global Variables: Store frogs, flies and the user controlled frog's state 2. Properties for frogs and flies: Use objects to represent each frog and fly, storing properties like position, size, and the 'isUserControlled' for the player's frog.
- * Functions: 1. Setting up the fuction: Use function to initalize the game, place the frogs and fleis on the canvas. 2. Drawing Functions: each frame, update and display the game objects in a 'draw' function. 3. Helper functions: use helper functions to extend the frog's tongue, move flies and check for collisions.
- * 
  */
 
 "use strict";
 
 // Our frog
 const frog = {
-    // The frog's body has a position and size
-    body: {
-        x: 320,
-        y: 520,
-        size: 150
-    },
-    // The frog's tongue has a position, size, speed, and state
-    tongue: {
-        x: undefined,
-        y: 480,
-        size: 20,
-        speed: 20,
-        // Determines how the tongue moves each frame
-        state: "idle" // State can be: idle, outbound, inbound
-    }
+    body: { x: 320, y: 520, size: 150 },
+    tongue: { x: undefined, y: 480, size: 20, speed: 20, state: "idle" } // idle, outbound, inbound
 };
-//Array for AI-controlled frogs
+
+// Array for AI-controlled frogs
 const aiFrogs = [];
 
 // Our fly
-// Has a position, size, and speed of horizontal movement
-const fly = {
-    x: 0,
-    y: 200, // Will be random
-    size: 10,
-    speedX: 3,
-    speedY: 0 
-};
+const fly = { x: 0, y: 200, size: 10, speedX: 3, speedY: 0 };
 
-/**
- * Creates the canvas and initializes the fly and AI frogs
- */
+// Modify setup to assign directions to left and right frogs
 function setup() {
     createCanvas(640, 480);
 
     // Give the fly its first random position
     resetFly();
 
-    //Initializing the ai-frogs in different positions (sides of the screen)
-    aiFrogs.push(createAIfrog(0, height / 2)); //left side
-    aiFrogs.push(createAIfrog(width, height / 2)); //right side
-    aiFrogs.push(createAIfrog(width / 2, 0)); //top side
+    // Initializing the ai-frogs in different positions (sides of the screen)
+    aiFrogs.push(createAIFrog(0, height / 2, "right")); // Left frog with right-moving tongue
+    aiFrogs.push(createAIFrog(width, height / 2, "left")); // Right frog with left-moving tongue
+    aiFrogs.push(createAIFrog(width / 2, 0, "up")); // Top frog with upward tongue
 }
-
 
 function draw() {
     background("#87ceeb");
     
-    // Move and draw the flies
     moveFly();
     drawFly();
     
@@ -95,7 +65,6 @@ function draw() {
 
 /**
  * Moves the fly according to its speed
- * Resets the fly if it gets off the canvas
  */
 function moveFly() {
     fly.x += fly.speedX;
@@ -105,7 +74,6 @@ function moveFly() {
         resetFly();
     }
 }
-
 
 /**
  * Draws the fly as a black circle
@@ -152,44 +120,52 @@ function resetFly() {
 }
 
 /**
- * Moves the frog to the mouse position on x
+ * Moves the user-controlled frog to follow the mouse
  */
 function moveFrog() {
     frog.body.x = mouseX;
 }
 
+
 /**
- * Handles moving the tongue based on its state
+ * Moves the tongue based on its state and direction
  */
-function moveTongue() {
-    // Tongue matches the frog's x
+function moveTongue(frog) {
+    // Set the x-position of the tongue to the frog's body position for alignment
     frog.tongue.x = frog.body.x;
-    // If the tongue is idle, it doesn't do anything
+
+    // Handle tongue movement based on its direction and state
     if (frog.tongue.state === "idle") {
         // Do nothing
     }
-    // If the tongue is outbound, it moves up
     else if (frog.tongue.state === "outbound") {
-        frog.tongue.y += -frog.tongue.speed;
-        // The tongue bounces back if it hits the top
-        if (frog.tongue.y <= 0) {
+        // Move tongue based on direction
+        if (frog.direction === "up") frog.tongue.y -= frog.tongue.speed;
+        else if (frog.direction === "right") frog.tongue.x += frog.tongue.speed;
+        else if (frog.direction === "left") frog.tongue.x -= frog.tongue.speed;
+
+        // Change state to inbound if the tongue reaches a boundary
+        if (frog.tongue.y <= 0 || frog.tongue.x >= width || frog.tongue.x <= 0) {
             frog.tongue.state = "inbound";
         }
     }
-    // If the tongue is inbound, it moves down
     else if (frog.tongue.state === "inbound") {
-        frog.tongue.y += frog.tongue.speed;
-        // The tongue stops if it hits the bottom
-        if (frog.tongue.y >= height) {
+        // Retract the tongue based on direction
+        if (frog.direction === "up") frog.tongue.y += frog.tongue.speed;
+        else if (frog.direction === "right") frog.tongue.x -= frog.tongue.speed;
+        else if (frog.direction === "left") frog.tongue.x += frog.tongue.speed;
+
+        // Stop the tongue when it reaches its resting position
+        if (frog.tongue.y >= frog.body.y || frog.tongue.x >= frog.body.x || frog.tongue.x <= frog.body.x) {
             frog.tongue.state = "idle";
         }
     }
 }
 
 /**
- * Displays the tongue (tip and line connection) and the frog (body)
+ * Displays the tongue and body for any frog
  */
-function drawFrog() {
+function drawFrog(frog) {
     // Draw the tongue tip
     push();
     fill("#ff0000");
@@ -212,21 +188,19 @@ function drawFrog() {
     pop();
 }
 
-
 /**
  * Checks if the tongue overlaps with the fly
  */
 function checkTongueFlyOverlap(frog) {
     const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
-    const eaten = (d < frog.tongue.size / 2 + fly.size / 2);
-    if (eaten) {
+    if (d < frog.tongue.size / 2 + fly.size / 2) {
         resetFly();
         frog.tongue.state = "inbound"; // Retract the tongue after catching
     }
 }
 
 /**
- * Launch the tongue on click (for the user-controlled frog)
+ * Launch the tongue on click for user-controlled frog
  */
 function mousePressed() {
     if (frog.tongue.state === "idle") {
@@ -234,4 +208,25 @@ function mousePressed() {
     }
 }
 
+/**
+ * Create a new AI frog with given x and y positions and direction
+ */
+function createAIFrog(x, y, direction = "up") {
+    return {
+        body: { x, y, size: 150 },
+        tongue: { x, y, size: 20, speed: 20, state: "idle" },
+        direction: direction // Direction can be "up", "left", or "right"
+    };
+}
 
+/**
+ * Move AI tongues by randomly deciding to extend the tongue
+ */
+function moveAITongues() {
+    for (let aiFrog of aiFrogs) {
+        if (aiFrog.tongue.state === "idle" && random() < 0.01) { // 1% chance each frame
+            aiFrog.tongue.state = "outbound";
+        }
+        moveTongue(aiFrog);
+    }
+}
