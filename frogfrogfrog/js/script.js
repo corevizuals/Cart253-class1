@@ -50,27 +50,38 @@ const fly = {
     x: 0,
     y: 200, // Will be random
     size: 10,
-    speed: 3
+    speedX: 3,
+    speedY: 0 
 };
 
 /**
- * Creates the canvas and initializes the fly
+ * Creates the canvas and initializes the fly and AI frogs
  */
 function setup() {
     createCanvas(640, 480);
 
     // Give the fly its first random position
     resetFly();
+
+    //Initializing the ai-frogs in different positions (sides of the screen)
+    aiFrogs.push(createAIfrog(0, height / 2)); //left side
+    aiFrogs.push(createAIfrog(width, height / 2)); //right side
+    aiFrogs.push(createAIfrog(width / 2, 0)); //top side
 }
+
+//testing if my code works
 
 function draw() {
     background("#87ceeb");
+    
+    // Move and draw the flies
     moveFly();
     drawFly();
+    
+    // User-controlled frog
     moveFrog();
-    moveTongue();
-    drawFrog();
-    checkTongueFlyOverlap();
+    moveTongue(frog);
+    drawFrog(frog);
 }
 
 /**
