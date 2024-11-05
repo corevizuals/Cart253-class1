@@ -69,7 +69,6 @@ function setup() {
     aiFrogs.push(createAIfrog(width / 2, 0)); //top side
 }
 
-//testing if my code works
 
 function draw() {
     background("#87ceeb");
@@ -82,7 +81,7 @@ function draw() {
     moveFrog();
     moveTongue(frog);
     drawFrog(frog);
-    
+
     // AI-controlled frogs
     moveAITongues();
     for (let aiFrog of aiFrogs) {
@@ -96,16 +95,17 @@ function draw() {
 
 /**
  * Moves the fly according to its speed
- * Resets the fly if it gets all the way to the right
+ * Resets the fly if it gets off the canvas
  */
 function moveFly() {
-    // Move the fly
-    fly.x += fly.speed;
-    // Handle the fly going off the canvas
-    if (fly.x > width) {
+    fly.x += fly.speedX;
+    fly.y += fly.speedY;
+    
+    if (fly.x < 0 || fly.x > width || fly.y < 0 || fly.y > height) {
         resetFly();
     }
 }
+
 
 /**
  * Draws the fly as a black circle
