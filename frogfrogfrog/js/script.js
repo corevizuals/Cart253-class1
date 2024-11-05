@@ -82,6 +82,16 @@ function draw() {
     moveFrog();
     moveTongue(frog);
     drawFrog(frog);
+    
+    // AI-controlled frogs
+    moveAITongues();
+    for (let aiFrog of aiFrogs) {
+        drawFrog(aiFrog);
+        checkTongueFlyOverlap(aiFrog);
+    }
+
+    // Check for user frog catching fly
+    checkTongueFlyOverlap(frog);
 }
 
 /**
