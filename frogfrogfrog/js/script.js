@@ -119,11 +119,36 @@ function drawFly() {
 }
 
 /**
- * Resets the fly to the left with a random y
+ * Resets the fly to a random side with random speed and direction
  */
 function resetFly() {
-    fly.x = 0;
-    fly.y = random(0, 300);
+    const side = floor(random(4));
+    switch (side) {
+        case 0: // Left
+            fly.x = 0;
+            fly.y = random(height);
+            fly.speedX = random(1, 3);
+            fly.speedY = 0;
+            break;
+        case 1: // Right
+            fly.x = width;
+            fly.y = random(height);
+            fly.speedX = -random(1, 3);
+            fly.speedY = 0;
+            break;
+        case 2: // Top
+            fly.x = random(width);
+            fly.y = 0;
+            fly.speedX = 0;
+            fly.speedY = random(1, 3);
+            break;
+        case 3: // Bottom
+            fly.x = random(width);
+            fly.y = height;
+            fly.speedX = 0;
+            fly.speedY = -random(1, 3);
+            break;
+    }
 }
 
 /**
