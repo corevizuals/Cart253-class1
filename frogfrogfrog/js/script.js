@@ -41,6 +41,8 @@ const frog = {
         state: "idle" // State can be: idle, outbound, inbound
     }
 };
+//Array for AI-controlled frogs
+
 
 // Our fly
 // Has a position, size, and speed of horizontal movement
@@ -160,4 +162,29 @@ function drawFrog() {
     push();
     fill("#00ff00");
     noStroke();
-    ellipse(frog.body.x, 
+    ellipse(frog.body.x, frog.body.y, frog.body.size);
+    pop();
+}
+
+/**
+ * Handles the tongue overlapping the fly
+ */
+function checkTongueFlyOverlap() {
+    // Get distance from tongue to fly
+    const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
+    // Check if it's an overlap
+    const eaten = (d < frog.tongue.size/2 + fly.size/2);
+    if (eaten) {
+        // Reset the fly
+        resetFly();
+        // Bring back the tongue
+        frog.tongue.state = "inbound";
+    }
+}
+
+/**
+ * Launch the tongue on click (if it's not launched yet)
+ */
+function mousePressed() {
+    if (frog.tongue.state === "idle") {
+        frog.t
