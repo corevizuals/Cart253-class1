@@ -19,7 +19,8 @@
 // Our frog
 const frog = {
     body: { x: 320, y: 520, size: 150 },
-    tongue: { x: undefined, y: 480, size: 20, speed: 20, state: "idle" } // idle, outbound, inbound
+    tongue: { x: undefined, y: 480, size: 20, speed: 20, state: "idle" },
+    direction: "up" // Default direction for user-controlled frog
 };
 
 // Array for AI-controlled frogs
@@ -28,17 +29,19 @@ const aiFrogs = [];
 // Our fly
 const fly = { x: 0, y: 200, size: 10, speedX: 3, speedY: 0 };
 
-// Modify setup to assign directions to left and right frogs
+/**
+ * Creates the canvas and initializes the fly and AI frogs
+ */
 function setup() {
     createCanvas(640, 480);
 
-    // Give the fly its first random position
+    // Initialize the fly
     resetFly();
 
-    // Initializing the ai-frogs in different positions (sides of the screen)
-    aiFrogs.push(createAIFrog(0, height / 2, "right")); // Left frog with right-moving tongue
-    aiFrogs.push(createAIFrog(width, height / 2, "left")); // Right frog with left-moving tongue
-    aiFrogs.push(createAIFrog(width / 2, 0, "up")); // Top frog with upward tongue
+    // Create AI frogs with directions
+    aiFrogs.push(createAIFrog(0, height / 2, "right"));   // Left side frog
+    aiFrogs.push(createAIFrog(width, height / 2, "left")); // Right side frog
+    aiFrogs.push(createAIFrog(width / 2, 0, "down"));      // Top side frog
 }
 
 function draw() {
@@ -126,38 +129,53 @@ function moveFrog() {
     frog.body.x = mouseX;
 }
 
-
 /**
- * Moves the tongue based on its state and direction
+ * Handles moving the tongue based on its state and direction
  */
 function moveTongue(frog) {
-    // Set the x-position of the tongue to the frog's body position for alignment
-    frog.tongue.x = frog.body.x;
-
-    // Handle tongue movement based on its direction and state
+    // Only set initial position to match the frog’s body position if the tongue is idle
     if (frog.tongue.state === "idle") {
-        // Do nothing
+        frog.tongue.x = frog.body.x;
+        frog.tongue.y = frog.body.y;
     }
-    else if (frog.tongue.state === "outbound") {
-        // Move tongue based on direction
-        if (frog.direction === "up") frog.tongue.y -= frog.tongue.speed;
-        else if (frog.direction === "right") frog.tongue.x += frog.tongue.speed;
-        else if (frog.direction === "left") frog.tongue.x -= frog.tongue.speed;
 
-        // Change state to inbound if the tongue reaches a boundary
-        if (frog.tongue.y <= 0 || frog.tongue.x >= width || frog.tongue.x <= 0) {
-            frog.tongue.state = "inbound";
+    if (frog.tongue.state === "outbound") {
+        switch (frog.direction) {
+            case "up":
+                frog.tongue.y -= frog.tongue.speed;
+                if (frog.tongue.y <= 0) frog.tongue.state = "inbound";
+                break;
+            case "down":
+                frog.tongue.y += frog.tongue.speed;
+                if (frog.tongue.y >= height) frog.tongue.state = "inbound";
+                break;
+            case "left":
+                frog.tongue.x -= frog.tongue.speed;
+                if (frog.tongue.x <= 0) frog.tongue.state = "inbound";
+                break;
+            case "right":
+                frog.tongue.x += frog.tongue.speed;
+                if (frog.tongue.x >= width) frog.tongue.state = "inbound";
+                break;
         }
-    }
-    else if (frog.tongue.state === "inbound") {
-        // Retract the tongue based on direction
-        if (frog.direction === "up") frog.tongue.y += frog.tongue.speed;
-        else if (frog.direction === "right") frog.tongue.x -= frog.tongue.speed;
-        else if (frog.direction === "left") frog.tongue.x += frog.tongue.speed;
-
-        // Stop the tongue when it reaches its resting position
-        if (frog.tongue.y >= frog.body.y || frog.tongue.x >= frog.body.x || frog.tongue.x <= frog.body.x) {
-            frog.tongue.state = "idle";
+    } else if (frog.tongue.state === "inbound") {
+        switch (frog.direction) {
+            case "up":
+                frog.tongue.y += frog.tongue.speed;
+                if (frog.tongue.y >= frog.body.y) frog.tongue.state = "idle";
+                break;
+            case "down":
+                frog.tongue.y -= frog.tongue.speed;
+                if (frog.tongue.y <= frog.body.y) frog.tongue.state = "idle";
+                break;
+            case "left":
+                frog.tongue.x += frog.tongue.speed;
+                if (frog.tongue.x >= frog.body.x) frog.tongue.state = "idle";
+                break;
+            case "right":
+                frog.tongue.x -= frog.tongue.speed;
+                if (frog.tongue.x <= frog.body.x) frog.tongue.state = "idle";
+                break;
         }
     }
 }
@@ -209,13 +227,13 @@ function mousePressed() {
 }
 
 /**
- * Create a new AI frog with given x and y positions and direction
+ * Creates a new AI frog with given x and y positions
  */
-function createAIFrog(x, y, direction = "up") {
+function createAIFrog(x, y, direction) {
     return {
         body: { x, y, size: 150 },
         tongue: { x, y, size: 20, speed: 20, state: "idle" },
-        direction: direction // Direction can be "up", "left", or "right"
+        direction: direction // Add direction property
     };
 }
 
@@ -224,7 +242,7 @@ function createAIFrog(x, y, direction = "up") {
  */
 function moveAITongues() {
     for (let aiFrog of aiFrogs) {
-        if (aiFrog.tongue.state === "idle" && random() < 0.01) { // 1% chance each frame
+        if (aiFrog.tongue.state === "idle" && random() < 0.01) {
             aiFrog.tongue.state = "outbound";
         }
         moveTongue(aiFrog);
