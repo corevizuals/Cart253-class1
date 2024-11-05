@@ -212,27 +212,26 @@ function drawFrog() {
     pop();
 }
 
+
 /**
- * Handles the tongue overlapping the fly
+ * Checks if the tongue overlaps with the fly
  */
-function checkTongueFlyOverlap() {
-    // Get distance from tongue to fly
+function checkTongueFlyOverlap(frog) {
     const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
-    // Check if it's an overlap
-    const eaten = (d < frog.tongue.size/2 + fly.size/2);
+    const eaten = (d < frog.tongue.size / 2 + fly.size / 2);
     if (eaten) {
-        // Reset the fly
         resetFly();
-        // Bring back the tongue
-        frog.tongue.state = "inbound";
+        frog.tongue.state = "inbound"; // Retract the tongue after catching
     }
 }
 
 /**
- * Launch the tongue on click (if it's not launched yet)
+ * Launch the tongue on click (for the user-controlled frog)
  */
 function mousePressed() {
     if (frog.tongue.state === "idle") {
         frog.tongue.state = "outbound";
     }
 }
+
+
