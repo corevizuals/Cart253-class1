@@ -42,7 +42,7 @@ const frog = {
     }
 };
 //Array for AI-controlled frogs
-
+const aiFrogs = [];
 
 // Our fly
 // Has a position, size, and speed of horizontal movement
@@ -187,4 +187,6 @@ function checkTongueFlyOverlap() {
  */
 function mousePressed() {
     if (frog.tongue.state === "idle") {
-        frog.t
+        frog.tongue.state = "outbound";
+    }
+}
