@@ -9,13 +9,4 @@ Inspired by Hungry Hungry Hippos, this game combines timing and coordination to 
 Core Concepts:
 
 Player Control: Players control a frog using keyboard/mouse inputs.
-Flies: Flies move across the screen, requiring the player to move and interact with them.
-Scoring System: Each fly eaten by the frog adds points to the score.
-Time Limit/Objective: The game has a target score (20) as a goal, encouraging the player to collect as many points as possible within the limit.
-
-
-Potential Features I could expand on:
-
-Multiplayer (for more than one frog)
-Power-ups (e.g., temporary speed boost, larger mouth)
-Random obstacles (e.g., harmful bugs that reduce points) *note i never ended finding time to implement these features.
+Flies: Flies move across the screen, requiring the player to

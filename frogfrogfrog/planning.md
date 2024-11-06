@@ -66,14 +66,4 @@ Updating Score: When a collision is detected, added a conditional to increase th
 
 Stage 5 - Adding a Winning Screen:
 
-Winning Screen Display: Implemented a simple winning screen that appears when a certain score or objective is met. Used a conditional to check if the player's score reaches this target, which then triggers the display of the winning screen.
-End Condition: The game stops once the winning screen is displayed, and players are given the option to restart or exit.
-
-
-Tools Used:
-
-p5.js: For drawing the game elements on a canvas.
-JavaScript: For all game logic, including functions, arrays, variables, and conditional statements.
-Class Videos and Notes: Used as a primary learning resource from the class.
-ChatGPT: Assisted with debugging and refining code, as well as brainstorming ideas during development.
-Freeform on iPad: Used to sketch initial game ideas, layouts, and gameplay flow for planning the overall design.
+Winning Screen Display: Implemented a simple winning screen that ap
