@@ -7,5 +7,3 @@ A game about catching flies.
 - [Ideas](./ideas.md)
 - [Planning](./planning.md)
 - [Pseudocode](./pseudocode.md)
-
-Read me
