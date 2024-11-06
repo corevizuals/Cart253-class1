@@ -40,67 +40,40 @@ Questions:
 
 ## The program starts to form....
 
-What is there?
+Stage 1 - Setting Up the Basics with Variables:
 
-- The frog
-    - Position and size
-    - Position and size of tongue
-    - What is the tongue doing?
-- The fly
-    - Position and the size
-    - Velocity
+Canvas Setup: Used p5.js to create the game canvas where the action takes place.
+Defining Key Variables: Initialized essential variables, including those for the frog's position, speed, score, and a timer. Also set up variables to store target properties, like position and whether a target is "active."
 
-```
-frog
-    body
-        x
-        y
-        size
-    tongue
-        x
-        y
-        size
-        speed
-        state
 
-fly
-    x
-    y
-    size
-    speed
-```
+Stage 2 - Creating the Frog with Functions and Movement Controls:
 
-What happens in this project?
+Frog Movement: Created a function to update the frog's position based on player's mouse movements and mouse clicks.
+Boundary Checking: Added conditionals to ensure the frog stays within the canvas area and doesn’t move outside the boundaries.
 
-- Start (setup)
-    - Create a canvas
-    
-- Every frame (draw)
-    - Draw the background
-    - Move and draw the fly
-        - Add the fly's speed to it x
-        - Draw a circle at the fly's position with its size (black)
-    - Move and draw the frog
-        - Move the frog to the mouse's x position
-        - Draw a green circle at the frog's position with its size
-    - Move and draw the tongue
-        - Move the tongue
-            - If the tongue isn't launched, just do nothing... don't draw it
-            - If the tongue is launched, move it up (by its speed)
-            - If the tongue is coming back, move it down (by its speed)
-            - If the tongue hits the top, send it back down
-            - If the tongue gets back to the frog, then stop it
-        - Draw the tongue
-            - Draw a line from the frog to the tongue position
-            - Draw a circle at the end of the tongue
-    - Check if the tongue hit the fly
-        - Check if tongue circle and fly circle overlap
-        - If they do, then reset the fly
-        - If they don't.... nothing... just keep being a tongue
 
-Events
+Stage 3 - Target (flies) Generation and Management Using Arrays and Conditionals:
 
-- If the user clicks the mouse
-    - If the tongue is still inside the frog's mouth
-        - Launch the tongue
+Array for Targets: Set up an array to hold multiple targets, allowing multiple flies to appear on screen at once.
+Spawning Targets: Created a function to generate targets at random positions. Used conditionals within this function to determine when and where a new target should appear.
+Moving Targets: Defined logic to move each target in the array, with random.
 
+
+Stage 4 - Detecting Collisions and Scoring with Functions and Conditionals:
+Collision Detection: Wrote a function to check if the frog's position overlaps with any target. Used conditionals within this function to confirm a "hit."
+Updating Score: When a collision is detected, added a conditional to increase the score variable and remove the "eaten" flies from the array.
+
+
+Stage 5 - Adding a Winning Screen:
+
+Winning Screen Display: Implemented a simple winning screen that appears when a certain score or objective is met. Used a conditional to check if the player's score reaches this target, which then triggers the display of the winning screen.
+End Condition: The game stops once the winning screen is displayed, and players are given the option to restart or exit.
+
+
+Tools Used:
+
+p5.js: For drawing the game elements on a canvas.
+JavaScript: For all game logic, including functions, arrays, variables, and conditional statements.
+Class Videos and Notes: Used as a primary learning resource from the class.
+ChatGPT: Assisted with debugging and refining code, as well as brainstorming ideas during development.
+Freeform on iPad: Used to sketch initial game ideas, layouts, and gameplay flow for planning the overall design.
