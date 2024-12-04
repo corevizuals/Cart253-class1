@@ -22,24 +22,4 @@ Hungry Hungry Frogs is an arcade-inspired gaming experience featuring four disti
    Aim and shoot at targets 'Froggies' with your frog's tongue. Test your accuracy and timing to achieve the best score.
 
 4. **Frog Leap**  
-   Navigate your frog through a series of platforms. Leap skillfully using the space and right arrow key to avoid falling and keep climbing to set a new record.
-
-## Gameplay Instructions:
-- Use arrow keys or the mouse to control your frog, depending on the mini-game.
-- Complete each mini-game's objective to score points and win.
-- Timing, precision, and strategy will help you excel.
-
-## Features:
-- Four unique mini-games offering diverse gameplay styles.
-- Engaging graphics and animations with a consistent frog theme.
-- Scoring and leaderboard system to track progress across games.
-- Intuitive controls designed for accessibility and ease of use.
-
-## Future Improvements:
-- Unlockable power-ups for added excitement and strategic depth.
-- Online multiplayer functionality to compete with friends.
-- Additional mini-games to expand the collection.
-- Customizable frogs and environments for a personalized experience.
-
----
-Enjoy *Hungry Hungry Frogs* and test your froggy skills! 🐸
+   Navigate your frog through a series of platforms. Leap skillfu
