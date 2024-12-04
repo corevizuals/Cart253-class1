@@ -23,6 +23,15 @@ let frogImage; // Variable to store the frog image
 let fallingFrogs = []; // Array to store falling frog objects
 const NUM_FROGS = 30; // Number of frogs to display
 
+//Game 2:Pong game
+let leftPaddle, rightPaddle, ball;
+let leftScore = 0, rightScore = 0;
+let paddleSpeed = 5;
+let ballSpeedX = 3, ballSpeedY = 3;
+let winningScore = 5; // The score required to win the game
+let aiMissChance = 0.3; // AI paddle "miss" chance (percentage, e.g., 0.1 means 10% chance of missing)
+let aiSpeed = 6; // Control AI speed, lower values can help smooth the movement
+
 
 const NUM_FROGGIES = 10; // Number of froggies to fall
 const NUM_FLIES = 5; // Number of flies the player can shoot
@@ -65,6 +74,11 @@ function setup() {
             size: random(20, 40) // Random size
         });
     }
+
+    // Initialize paddles and ball
+    leftPaddle = createVector(50, height / 2 - 50); // Left paddle position
+    rightPaddle = createVector(width - 50, height / 2 - 50); // Right paddle position
+    ball = createVector(width / 2, height / 2); // Ball position
 
     // Initialize the falling froggies array
     for (let i = 0; i < NUM_FROGGIES; i++) {
@@ -120,6 +134,27 @@ function draw() {
         showMenu();
         exitButton.hide(); // Hide the exit button on the menu screen
         updateAndDrawFrogs(); // Add the falling frog effect
+
+        //Game 2: Frog Pong
+    } else if (gameState === "game2") {
+        // Check for winning conditions
+        if (leftScore >= winningScore) {
+            displayWinningScreenGame2("Left Player Wins!"); // Show the winning screen for the left player
+            noLoop(); // Stop the game loop after displaying the winning screen
+        } else if (rightScore >= winningScore) {
+            displayWinningScreenGame2("Right Player Wins!"); // Show the winning screen for the right player
+            noLoop(); // Stop the game loop
+        } else {
+            drawAnimatedBackground();      // Background animation effect (moving gradient)
+            // Pong game logic
+            moveBall(); // Update ball position
+            movePaddles(); // Update paddle positions based on player input
+            checkCollisions(); // Check for ball collisions with paddles and walls
+            drawPaddles(); // Render the paddles
+            drawBall(); // Render the ball
+            displayScoresgame2(); // Display the scores for the current game
+        }
+
     
 
         //Game 1: Frogs Catching Flies
@@ -603,4 +638,157 @@ function mouseClicked() {
     if (gameWon && mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height / 2 + 100 && mouseY < height / 2 + 130) {
         resetGame();
     }
+}
+
+
+//Game 2: Pong game functions
+
+function displayWinningScreenGame2(winnerMessage) {
+    background(0); // Black background
+    fill(255); // White text
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text(winnerMessage, width / 2, height / 2 - 20); // Display the winner message
+    textSize(16);
+    text("Press 'R' to Restart", width / 2, height / 2 + 20); // Instructions to restart
+}
+
+function resetGame2() {
+    // Reset positions
+    leftPaddle.set(50, height / 2 - 50);
+    rightPaddle.set(width - 50, height / 2 - 50);
+    ball.set(width / 2, height / 2);
+
+    // Reset scores
+    leftScore = 0;
+    rightScore = 0;
+
+    // Reset ball speed (randomize direction)
+    ballSpeedX = random([-3, 3]);
+    ballSpeedY = random([-3, 3]);
+
+    // Restart the game loop
+    loop();
+}
+
+function moveBall() {
+    // Move the ball
+    ball.x += ballSpeedX;
+    ball.y += ballSpeedY;
+
+    // Bounce off top and bottom edges
+    if (ball.y <= 0 || ball.y >= height) {
+        ballSpeedY *= -1; // Reverse the Y direction
+    }
+
+    // Ball goes off the left or right edge (scoring logic)
+    if (ball.x <= 0) {
+        rightScore++; // Right player scores
+        resetBall();  // Reset the ball position
+    } else if (ball.x >= width) {
+        leftScore++; // Left player scores
+        resetBall();  // Reset the ball position
+    }
+}
+
+/**
+ * Moves paddles based on player input (right paddle) and AI logic (left paddle).
+ */
+function movePaddles() {
+    // AI-controlled left paddle
+    if (random(1) > aiMissChance) {  // If random number is greater than the miss chance, AI follows the ball
+        // Smooth the AI's movement towards the ball by moving it gradually
+        if (ball.y > leftPaddle.y + 50) {
+            leftPaddle.y += aiSpeed; // Move AI paddle down gradually
+        } else if (ball.y < leftPaddle.y) {
+            leftPaddle.y -= aiSpeed; // Move AI paddle up gradually
+        }
+    } else {  // AI intentionally misses sometimes by moving randomly
+        if (random(1) > 0.5) {
+            leftPaddle.y += aiSpeed;  // Move AI paddle down
+        } else {
+            leftPaddle.y -= aiSpeed;  // Move AI paddle up
+        }
+    }
+
+    // Prevent left paddle from going off-screen
+    leftPaddle.y = constrain(leftPaddle.y, 0, height - 100);
+
+    // Player-controlled right paddle
+    if (keyIsDown(UP_ARROW)) {
+        rightPaddle.y -= paddleSpeed;
+    }
+    if (keyIsDown(DOWN_ARROW)) {
+        rightPaddle.y += paddleSpeed;
+    }
+
+    // Prevent right paddle from going off-screen
+    rightPaddle.y = constrain(rightPaddle.y, 0, height - 100);
+}
+
+function checkCollisions() {
+    // Ball collision with left paddle
+    if (ball.x <= leftPaddle.x + 10 && ball.y > leftPaddle.y && ball.y < leftPaddle.y + 100) {
+        ballSpeedX *= -1; // Bounce the ball back
+    }
+
+    // Ball collision with right paddle
+    if (ball.x >= rightPaddle.x - 10 && ball.y > rightPaddle.y && ball.y < rightPaddle.y + 100) {
+        ballSpeedX *= -1; // Bounce the ball back
+    }
+}
+
+function drawPaddles() {
+    fill("#FF5733");
+    // Draw the left paddle
+    rect(leftPaddle.x, leftPaddle.y, 10, 100);
+    // Draw the right paddle
+    rect(rightPaddle.x, rightPaddle.y, 10, 100);
+}
+
+function drawBall() {
+    fill("#009E60");
+    // Draw the ball
+    ellipse(ball.x, ball.y, 20, 20);
+
+    // Add a fading trail
+    fill(255, 100, 100, 50); // Transparent red
+    ellipse(ball.x, ball.y, ball.diameter + 10);
+
+}
+
+function displayScoresgame2() {
+    // Display scores for both players
+    textSize(32);
+    fill(255);
+    textAlign(CENTER, TOP);
+    text(leftScore, width / 4, 20); // Left player's score
+    text(rightScore, width * 3 / 4, 20); // Right player's score
+}
+
+function resetBall() {
+    // Reset the ball position to the center
+    ball.x = width / 2;
+    ball.y = height / 2;
+
+    // Give the ball a new direction after scoring
+    ballSpeedX = random() > 0.5 ? 3 : -3; // Randomly choose direction
+    ballSpeedY = random(-3, 3); // Randomly assign some vertical movement
+}
+
+// Function to add animated background (moving gradient + frog image)
+function drawAnimatedBackground() {
+    let color1 = color(135, 206, 235); // Sky blue
+    let color2 = color(255, 105, 180); // Light pink
+    let lerpedColor = lerpColor(color1, color2, sin(frameCount * 0.01) * 0.5 + 0.5);
+
+    // Draw the gradient background
+    background(lerpedColor);
+
+    // Draw the frog image with some opacity and scale to make it blend in as background
+    imageMode(CENTER);
+    tint(255, 100); // Add some transparency to the frog image
+    image(frogImage, width / 2, height / 2, width, height); // Adjust size and position of frog image
+
+    noTint(); // Reset the tint after drawing the image
 }
