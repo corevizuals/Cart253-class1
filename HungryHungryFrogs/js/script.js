@@ -42,6 +42,14 @@ let isFlickering = false; // Flag to control flicker effect
 let flickerTimer = 0; // Timer for flicker duration
 let maxFroggies = 10; // Max number of froggies that can hit the bottom before losing
 
+//Frog Leap
+let frogGame4 = { x: 100, y: 300, velocityY: 0, onPad: false }; // Frog properties
+let padsGame4 = [];
+let gravity = 0.5; // Gravity pulling the frog down
+let gameStarted = false; // Game starts only after spacebar is pressed
+let frogMenuScreen; // Declare a variable to store the menu screen image
+
+
 
 
 const NUM_FROGGIES = 10; // Number of froggies to fall
@@ -101,6 +109,10 @@ function setup() {
             hp: 5 // Initial hit points
         });
     }
+
+
+    frogGame4 = { x: 100, y: 300, velocityY: 0, onPad: false }; // Initialize frog
+    setupPadsGame4(); // Create the pads
 
 }
 
@@ -213,6 +225,36 @@ function draw() {
         }
 
         exitButton.show(); // Show the exit button during the game
+
+
+        //Game 4: Frog Leap
+    } else if (gameState === "game4") {
+
+        image(frogImage, 0, 0, width, height); // Ensure 'frogImage' matches the variable from preload()
+
+        if (!gameStarted) {
+            // Display "Press Space to Start" message
+            fill(0);
+            textSize(32);
+            textAlign(CENTER, CENTER);
+            text("Press Space to Start", width / 2, height / 2);
+        } else {
+            if (gameLost) {
+                displayGameOverScreen(); // Show game over screen
+            } else if (gameWon) {
+                displayWinningScreenGame4(); // Show winning screen
+            } else {
+                background("#87ceeb"); // Sky blue
+                displayPadsGame4();
+                moveFrogGame4();
+                checkCollisionGame4();
+                gameLoopGame4();
+    
+                // Draw frog
+                fill(0, 255, 0);
+                ellipse(frogGame4.x, frogGame4.y, 30, 30);
+            }
+        }
 
     
 
@@ -1021,3 +1063,109 @@ function showGameOver() {
     }
 }
 
+
+
+// Game 4: Frog Leap
+
+function setupPadsGame4() {
+    padsGame4 = [];
+    let xPos = 150;
+    for (let i = 0; i < 10; i++) { // 10 pads
+        let yPos = random(200, 350); // Random vertical position
+        padsGame4.push({ x: xPos, y: yPos, width: 60, height: 20 });
+        xPos += 150; // Space between pads
+    }
+    
+    // Position the frog on the first pad
+    const firstPad = padsGame4[0];
+    frogGame4.x = firstPad.x + firstPad.width / 2; // Center the frog horizontally
+    frogGame4.y = firstPad.y - 15; // Place the frog on top of the first pad
+    frogGame4.velocityY = 0; // Reset vertical velocity
+    frogGame4.onPad = true; // Mark frog as on a pad
+}
+
+function displayPadsGame4() {
+    fill(0, 255, 255);
+    for (let pad of padsGame4) {
+        rect(pad.x, pad.y, pad.width, pad.height);
+    }
+}
+
+function moveFrogGame4() {
+    if (!gameStarted) return; // Don't allow movement if the game hasn't started
+    
+    if (keyIsDown(RIGHT_ARROW)) {
+        frogGame4.x += 2; // Move right
+    }
+    if (frogGame4.y < height) { 
+        frogGame4.velocityY += gravity; // Apply gravity
+        frogGame4.y += frogGame4.velocityY; // Update vertical position
+    }
+
+    // Restrict movement
+    if (frogGame4.x <= 0) gameLost = true; // Touching the left side ends the game
+}
+
+function checkCollisionGame4() {
+    frogGame4.onPad = false;
+    for (let pad of padsGame4) {
+        if (
+            frogGame4.x + 15 > pad.x && // Frog's right side intersects pad
+            frogGame4.x - 15 < pad.x + pad.width && // Frog's left side intersects pad
+            frogGame4.y + 15 >= pad.y && // Frog's bottom touches pad
+            frogGame4.y + 15 <= pad.y + pad.height // Frog is within pad bounds
+        ) {
+            frogGame4.onPad = true;
+            frogGame4.velocityY = 0; // Stop falling
+            frogGame4.y = pad.y - 15; // Position frog above pad
+        }
+    }
+}
+
+function gameLoopGame4() {
+    // Move pads left
+    for (let pad of padsGame4) {
+        pad.x -= 2; // Pads move left
+    }
+
+    // Check for win condition
+    if (frogGame4.x >= padsGame4[padsGame4.length - 1].x) {
+        gameWon = true;
+    }
+
+    // Check if frog falls off screen
+    if (frogGame4.y > height) {
+        gameLost = true;
+    }
+}
+
+function resetGame4() {
+    // Reset frog properties
+    frogGame4 = { x: 100, y: 300, velocityY: 0, onPad: false };
+    frogGame4.velocityY = 0;
+    frogGame4.onPad = false;
+
+    // Re-initialize the pads
+    setupPadsGame4();
+
+    // Reset game state
+    gameLost = false;
+    gameWon = false;
+}
+
+function displayWinningScreenGame4() {
+    background(0, 255, 0); // Green background for winning screen
+    fill(255);
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text("You Won!", width / 2, height / 2 - 50);
+    textSize(20);
+    text("Press 'r' to Restart", width / 2, height / 2 + 50);
+}
+
+function checkWinCondition() {
+    // Check if the frog is on the last pad or has reached the goal
+    if (frogGame4.y <= padsGame4[padsGame4.length - 1].y && frogGame4.onPad) {
+        gameWon = true; // Set the game as won
+    }
+}
