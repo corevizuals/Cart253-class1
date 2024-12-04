@@ -32,6 +32,17 @@ let winningScore = 5; // The score required to win the game
 let aiMissChance = 0.3; // AI paddle "miss" chance (percentage, e.g., 0.1 means 10% chance of missing)
 let aiSpeed = 6; // Control AI speed, lower values can help smooth the movement
 
+//Frog Shooter
+let fallingFroggies = []; // Array to store falling frog objects for Game 3
+let fliesgame3 = []; // Array for flies shot by the player in Game 3
+let froggame3 = { x: 320, y: 520, size: 100, speed: 5 }; // Player frog in Game 3
+let froggieHitCount = 0; // To keep track of how many froggies have been hit
+let gameLost = false; // Flag to indicate if the player has lost
+let isFlickering = false; // Flag to control flicker effect
+let flickerTimer = 0; // Timer for flicker duration
+let maxFroggies = 10; // Max number of froggies that can hit the bottom before losing
+
+
 
 const NUM_FROGGIES = 10; // Number of froggies to fall
 const NUM_FLIES = 5; // Number of flies the player can shoot
@@ -154,6 +165,54 @@ function draw() {
             drawBall(); // Render the ball
             displayScoresgame2(); // Display the scores for the current game
         }
+
+
+        //Game 3: Frog Shooter
+    } else if (gameState === "game3") {
+        if (gameWon) {
+            displayWinningScreenGame3(); // Show the winning screen when the game is won
+        } else { 
+            // Game logic for Frog Shooter
+            moveFroggame3(); // Move the player's frog
+
+            // Draw the player frog
+            fill(0, 255, 0); // Green color for the frog
+            ellipse(froggame3.x, froggame3.y, froggame3.size);
+
+            // If the game is lost, show the game over screen
+            if (gameLost) {
+                showGameOver();
+                return;
+            }
+
+            // If the screen is flickering, display the red flicker
+            if (isFlickering) {
+                background(255, 0, 0); // Red screen
+                flickerTimer++;
+                if (flickerTimer > 10) { // Flicker duration (adjust to your preference)
+                    isFlickering = false;
+                    flickerTimer = 0;
+                }
+            }
+
+            // Game logic continues here (froggies falling, etc.)
+            updateFroggies();
+        
+
+        // Draw the flies
+        for (let i = 0; i < fliesgame3.length; i++) {
+            fill(255, 0, 0); // Red color for the flies
+            ellipse(fliesgame3[i].x, fliesgame3[i].y, fliesgame3[i].size);
+        }
+
+            moveFallingFroggies(); // Move falling froggies
+            handleFlies();
+            checkForCollisions(); // Check if flies hit froggies
+
+            displayScoresGame3(); // Display the score
+        }
+
+        exitButton.show(); // Show the exit button during the game
 
     
 
@@ -792,3 +851,173 @@ function drawAnimatedBackground() {
 
     noTint(); // Reset the tint after drawing the image
 }
+
+
+/**
+ * Game 3 - Player frog logic
+ */
+function moveFroggame3() {
+    froggame3.x = mouseX; // Move the frog horizontally with the mouse position
+    // Optional: you can add vertical movement limits here if needed
+}
+
+/**
+ * Handles the shooting of flies
+ */
+function handleFlies() {
+    // Create a new fly on mouse press
+    if (mouseIsPressed && fliesgame3.length < NUM_FLIES) {
+        fliesgame3.push({
+            x: froggame3.x,       // Fly starts at frog's x position
+            y: froggame3.y - 50,  // Slightly above the frog
+            size: 10,             // Fly size
+            speed: 5              // Speed of the fly moving upwards
+        });
+    }
+
+    // Move flies upwards and draw them
+    for (let fly of fliesgame3) {
+        fly.y -= fly.speed; // Update position
+        fill(255, 0, 0);    // Red color for flies
+        ellipse(fly.x, fly.y, fly.size); // Draw fly
+    }
+
+    // Remove flies that move off-screen
+    fliesgame3 = fliesgame3.filter(fly => fly.y > 0);
+}
+
+
+function moveFallingFroggies() {
+    for (let froggie of fallingFroggies) {
+        froggie.y += froggie.speed; // Move the froggies downwards
+
+        // Reset position if it goes off-screen
+        if (froggie.y > height) {
+            froggie.y = random(-height, 0);
+            froggie.x = random(width);
+        }
+
+        // Change froggie's color intensity based on HP
+        let colorIntensity = map(froggie.hp, 0, 5, 50, 255); // Adjust based on HP
+        fill(0, colorIntensity, 0); // Green color with intensity
+        ellipse(froggie.x, froggie.y, froggie.size);
+
+        // Display remaining HP as text above the froggie
+        fill(255);
+        textSize(12);
+        textAlign(CENTER);
+        text(froggie.hp, froggie.x, froggie.y - froggie.size / 2);
+    }
+}
+
+/**
+ * Check if any flies have hit a froggie
+ */
+function checkForCollisions() {
+    // Loop through all flies
+    for (let i = 0; i < fliesgame3.length; i++) {
+        // Loop through all froggies
+        for (let j = 0; j < fallingFroggies.length; j++) {
+            let fly = fliesgame3[i];
+            let froggie = fallingFroggies[j];
+
+            // Calculate distance between fly and froggie
+            let distance = dist(fly.x, fly.y, froggie.x, froggie.y);
+            
+            // Check if fly and froggie are colliding
+            if (distance < (fly.size / 2 + froggie.size / 2)) {
+                // Remove the fly that hit the froggie
+                fliesgame3.splice(i, 1);
+
+                // Decrease froggie's HP
+                fallingFroggies[j].hp -= 1;
+
+                // If froggie's HP reaches 0, remove the froggie
+                if (fallingFroggies[j].hp <= 0) {
+                    froggieHitCount++; // Increment hit count when froggie is defeated
+                    
+                    // Remove froggie from the game
+                    fallingFroggies.splice(j, 1);
+                    
+                    // Add a new froggie with full HP
+                    fallingFroggies.push({
+                        x: random(width),
+                        y: random(-height, 0),
+                        speed: random(1, 3),
+                        size: random(30, 50),
+                        hp: 5 // Reset HP for new froggie
+                    });
+                }
+
+                // Check if the player has hit 10 froggies (winning condition)
+                if (froggieHitCount >= 10) {
+                    gameWon = true; // Player wins after hitting 10 froggies
+                }
+
+                break; // Exit the inner loop to prevent further checking for this fly
+            }
+        }
+    }
+}
+
+function displayWinningScreenGame3() {
+    background("#32cd32");
+    textSize(48);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text("You Win!", width / 2, height / 2);
+    textSize(24);
+    text("Press 'R' to Restart or click Exit", width / 2, height / 2 + 50);
+}
+
+/**
+ * Display the score and win condition
+ */
+
+function displayScoresGame3() {
+    textSize(18);
+    fill(0);
+    text("Froggies Hit: " + froggieHitCount, 80, 120);
+}
+
+function updateFroggies() {
+    // Update froggies' positions
+    for (let i = 0; i < fallingFroggies.length; i++) {
+        let froggie = fallingFroggies[i];
+        froggie.y += froggie.speed;
+
+        // Check if the froggie hits the bottom
+        if (froggie.y >= height - froggie.size / 2) {
+            froggie.y = height - froggie.size / 2; // Stop at the bottom
+            froggieHitCount++; // Increment froggie hit count
+
+            // Trigger red flicker effect
+            isFlickering = true;
+
+            // Check if player has lost the game (after 20 froggies hit the bottom)
+            if (froggieHitCount >= maxFroggies) {
+                gameLost = true; // Player loses the game after 20 froggies hit the bottom
+            }
+        }
+    }
+}
+function showGameOver() {
+    background(0); // Black background for game over
+    fill(255); // White text
+
+    // Display "Game Over" message
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text('Game Over!', width / 2, height / 2 - 40);
+
+    // Display instructions to restart the game
+    textSize(20);
+    text('Press "R" to restart', width / 2, height / 2 + 40);
+
+    // Check for 'R' key press to restart Game 3
+    if (keyIsPressed && (key === 'R' || key === 'r')) {
+        resetGame3(); // Reset the game for Game 3 (Frog Shooter)
+        gameState = "game3"; // Set the gameState to "game3" to restart Game 3
+    }
+}
+
