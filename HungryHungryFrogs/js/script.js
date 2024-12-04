@@ -16,32 +16,69 @@
 
 "use strict";
 
-// Our frog
+// Global game state
+let exitButton;
+let gameState = "menu"; // Current game state: menu or playing
+let frogImage; // Variable to store the frog image
+let fallingFrogs = []; // Array to store falling frog objects
+const NUM_FROGS = 30; // Number of frogs to display
+
+
+const NUM_FROGGIES = 10; // Number of froggies to fall
+const NUM_FLIES = 5; // Number of flies the player can shoot
+
+function preload() {
+    frogImage = loadImage("assets/images/frog-menu-screen.png"); // Load the frog image
+}
+
 const frog = {
     body: { x: 320, y: 520, size: 150 },
     tongue: { x: undefined, y: 480, size: 20, speed: 20, state: "idle" },
     direction: "up" // Default direction for user-controlled frog
 };
-
-// Array for AI-controlled frogs
 const aiFrogs = [];
-
-// Array to store multiple flies
 const flies = [];
-const numFlies = 5; // Set the number of flies you want to have at once
-
-// Score variables
-let userScore = 0; // Score for the user-controlled frog
-const aiScores = [0, 0, 0]; // Scores for the AI frogs
-let gameWon = false; // Track if the user has won
+const numFlies = 5;
+let userScore = 0;
+const aiScores = [0, 0, 0];
+let gameWon = false;
 
 /**
  * Creates the canvas and initializes the flies and AI frogs
  */
 function setup() {
     createCanvas(640, 480);
-    resetGame(); // Call resetGame to initialize the game
+    resetGame(); // Initialize the game
+
+    // Create the exit button and position it at the bottom right corner of the canvas
+    exitButton = createButton('Exit');
+    exitButton.position(1000, 600);
+    exitButton.mousePressed(goToMenu);
+    exitButton.hide();  // Hide the button initially
+
+    // Initialize the falling frogs
+    for (let i = 0; i < NUM_FROGS; i++) {
+        fallingFrogs.push({
+            x: random(width), // Random horizontal position
+            y: random(-height, 0), // Start above the canvas
+            speed: random(0.5, 0.5), // Random fall speed
+            size: random(20, 40) // Random size
+        });
+    }
+
+    // Initialize the falling froggies array
+    for (let i = 0; i < NUM_FROGGIES; i++) {
+        fallingFroggies.push({
+            x: random(width), // Random horizontal position
+            y: random(-height, 0), // Start above the canvas
+            speed: random(0.5, 0.5), // Random fall speed
+            size: random(30, 50), // Random size
+            hp: 5 // Initial hit points
+        });
+    }
+
 }
+
 
 /**
  * Resets the game variables
@@ -57,50 +94,195 @@ function resetGame() {
     }
 
     // Create AI frogs with directions
-    aiFrogs.length = 0; // Clear existing AI frogs
+    aiFrogs.length = 0;
     aiFrogs.push(createAIFrog(0, height / 2, "right"));   // Left side frog
     aiFrogs.push(createAIFrog(width, height / 2, "left")); // Right side frog
     aiFrogs.push(createAIFrog(width / 2, 0, "down"));      // Top side frog
-    gameWon = false; // Reset winning state
+    gameWon = false;
 }
 
+/**
+ * Go back to the menu screen when the exit button is pressed
+ */
+function goToMenu() {
+    gameState = "menu";  // Transition to the menu screen
+    resetGameState();    // Reset the game state
+    exitButton.hide();   // Hide the exit button when returning to the menu
+}
+
+/**
+ * Main draw function that handles the menu screen or game screen
+ */
 function draw() {
     background("#87ceeb");
 
-    if (gameWon) {
-        displayWinningScreen();
-    } else {
-        // Move and draw each fly
-        for (let fly of flies) {
-            moveFly(fly);
-            drawFly(fly);
+    if (gameState === "menu") {
+        showMenu();
+        exitButton.hide(); // Hide the exit button on the menu screen
+        updateAndDrawFrogs(); // Add the falling frog effect
+    
+
+        //Game 1: Frogs Catching Flies
+    } else if (gameState === "playing") {
+        if (gameWon) {
+            displayWinningScreen(); // Show the winning screen when the game is won
+        } else {
+            // Check for AI victory condition
+            for (let score of aiScores) {
+                if (score >= 20) {
+                    gameState = "gameOver"; // Transition to gameOver state
+                }
+            }
+
+            // Game loop for frogs and flies
+            for (let fly of flies) {
+                moveFly(fly); // Move the fly
+                drawFly(fly); // Draw the fly
+            }
+
+            moveFrog(); // Move the player-controlled frog
+            moveTongue(frog); // Move the frog's tongue
+            drawFrog(frog); // Render the player-controlled frog
+
+            moveAITongues(); // Move AI-controlled frogs' tongues
+            for (let aiFrog of aiFrogs) {
+                drawFrog(aiFrog); // Render each AI-controlled frog
+                checkTongueFlyOverlap(aiFrog, false); // Check if AI tongues catch flies
+            }
+
+            checkTongueFlyOverlap(frog, true); // Check if the player-controlled frog's tongue catches flies
+
+            if (userScore >= 20) {
+                gameWon = true; // Mark the game as won when user score reaches 20
+            }
+
+            displayScores(); // Display scores on the screen
         }
 
-        // User-controlled frog
-        moveFrog();
-        moveTongue(frog);
-        drawFrog(frog);
+        exitButton.show(); // Show the exit button during the game
 
-        // AI-controlled frogs
-        moveAITongues();
-        for (let aiFrog of aiFrogs) {
-            drawFrog(aiFrog);
-            checkTongueFlyOverlap(aiFrog, false); // Pass false for AI frogs
-        }
-
-        // Check for user frog catching flies
-        checkTongueFlyOverlap(frog, true); // Pass true for user frog
-
-        // Check if user has won 
-        if (userScore >= 20) {
-            gameWon = true;
-        }
-        // for the aifrogs
-
-        // Display scores
-        displayScores();
+    } else if (gameState === "gameOver") {
+        displayGameOverScreen(); // Show the game over screen
+        exitButton.show(); // Allow the user to exit the game
     }
 }
+
+
+/**
+ * Show the menu screen with options to start the game
+ */
+function showMenu() {
+    background("#87ceeb"); // Clear background
+
+    textSize(32);
+    fill(0);
+    textAlign(CENTER, CENTER);
+    text("Hungry Hungry Frogs", width / 2, height / 4);
+
+    const menuOptions = [
+        { label: "Family Feud", y: height / 2 },
+        { label: "Frog Pong", y: height / 2 + 40 },
+        { label: "Frog Shooter", y: height / 2 + 80 },
+        { label: "Frog Leap", y: height / 2 + 120 }
+    ];
+
+    textSize(24);
+    for (let i = 0; i < menuOptions.length; i++) {
+        const option = menuOptions[i];
+        const textWidthEstimate = textWidth(option.label);
+
+        if (
+            mouseX > width / 2 - textWidthEstimate / 2 &&
+            mouseX < width / 2 + textWidthEstimate / 2 &&
+            mouseY > option.y - 20 &&
+            mouseY < option.y + 20
+        ) {
+            fill("#ffd700");
+        } else {
+            fill(0);
+        }
+
+        text(option.label, width / 2, option.y);
+    }
+
+    textSize(16);
+    fill(0);
+    text("Click a number to select", width / 2, height - 40);
+}
+
+/**
+ * 
+ * Handles key presses for restarting the game.
+ */
+function keyPressed() {
+    if (gameState === "menu") {
+        if (key === '1') {
+            gameState = "playing"; // Transition to the game
+            resetGame();
+        }
+        // Implement other options here if necessary
+    } else if (gameState === "gameOver") {
+        if (key === 'R' || key === 'r') {
+            gameState = "playing";
+            resetGame();
+        }
+    }
+
+    if (gameState === "menu") {
+        if (key === '2') {
+            gameState = "game2"; // Transition to the game
+            resetGame();
+        }
+    }
+
+    if (key === 'r' || key === 'R') {
+        if (gameState === "game2" && (leftScore >= winningScore || rightScore >= winningScore)) {
+            resetGame2(); // Reset Game 2
+            gameState = "game2"; // Set the game state to game 2
+        }
+    }
+
+
+    if (gameState === "menu") {
+        if (key === '3') {
+            gameState = "game3"; // Transition to the game
+            resetGame();
+        }
+    }
+
+    if (gameState === "game4" && keyCode === 32 && frogGame4.onPad) { // Jump only if on pad
+        frogGame4.velocityY = -10; // Jump velocity
+        frogGame4.onPad = false;
+    }
+
+    if (keyCode === 32 && !gameStarted && gameState === "game4") { // 32 is the keyCode for spacebar
+        gameStarted = true;
+    }
+
+
+        // If 'r' or 'R' is pressed, reset the appropriate game
+    if (key === 'r' || key === 'R') {
+        if (gameState === "game3" && (gameLost || gameWon)) {
+            resetGame3();
+            gameState = "game3"; // Ensure the correct game state is set
+        } else if (gameState === "game4" && (gameLost || gameWon)) {
+            resetGame4();
+            gameState = "game4"; // Ensure the correct game state is set
+        }
+    }
+}
+
+/**
+ * Resets the game state after winning or finishing
+ */
+function resetGameState() {
+    gameWon = false;
+    userScore = 0;
+    aiScores.fill(0);
+    flies.length = 0;
+    gameState = "menu"; // Go back to the menu after the game ends
+}
+
 
 /**
  * Creates a new fly object with random position and speed
@@ -136,6 +318,7 @@ function createFly() {
     }
     return fly;
 }
+
 
 /**
  * Moves a given fly according to its speed
@@ -218,6 +401,22 @@ function moveTongue(frog) {
     }
 }
 
+function updateAndDrawFrogs() {
+    for (let frog of fallingFrogs) {
+        // Update the frog's position
+        frog.y += frog.speed;
+
+        // Reset the frog's position if it falls off the bottom
+        if (frog.y > height) {
+            frog.y = random(-height, 0);
+            frog.x = random(width);
+        }
+
+        // Draw the frog image
+        image(frogImage, frog.x, frog.y, frog.size, frog.size);
+    }
+}
+
 /**
  * Displays the tongue and body for any frog
  */
@@ -265,10 +464,49 @@ function checkTongueFlyOverlap(frog, isUserFrog = false) {
  * Launch the tongue on click for user-controlled frog
  */
 function mousePressed() {
-    if (frog.tongue.state === "idle" && !gameWon) {
-        frog.tongue.state = "outbound";
+    if (gameState === "menu") {
+        // Option 1: Start Game 1
+        if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+            mouseY > height / 2 - 15 && mouseY < height / 2 + 15) {
+            gameState = "playing";
+            resetGame(); // Assuming this starts the first game
+        }
+        // Game 2 - Start Game 2
+        else if (mouseX > width / 2 - textWidth("Game2") / 2 && mouseX < width / 2 + textWidth("Game 2") / 2 &&
+                 mouseY > height / 2 + 20 && mouseY < height / 2 + 60) {
+            gameState = "game2"; // Switch to Game 2
+            resetGame(); // Reset for Game 2
+        }
+        // Option 3: Start Game 3
+        else if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+                 mouseY > height / 2 + 65 && mouseY < height / 2 + 95) {
+            gameState = "game3"; // Set game state to Game 3
+
+        }
+        // Option 4: Start Game 4
+        else if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+                 mouseY > height / 2 + 105 && mouseY < height / 2 + 135) {
+            gameState = "game4"; // Set game state to Game 3
+        }
+    } else {
+        // Launch the tongue in the game
+        if (gameState !== "menu" && frog.tongue.state === "idle" && !gameWon) {
+            frog.tongue.state = "outbound";
+        }
+
+        if (gameState === "game3") {
+            // Launch the tongue when clicked in Game 3
+            if (frog.tongue.state === "idle" && !gameWon) {
+                frog.tongue.state = "outbound"; // Start the tongue in Game 3
+                frog.tongue.x = frog.body.x + frog.body.size / 2; // Center tongue relative to frog
+                frog.tongue.y = frog.body.y;
+            }
+        }
     }
 }
+
+
+
 
 /**
  * Creates a new AI frog with given x and y positions
@@ -365,18 +603,4 @@ function mouseClicked() {
     if (gameWon && mouseX > width / 2 - 50 && mouseX < width / 2 + 50 && mouseY > height / 2 + 100 && mouseY < height / 2 + 130) {
         resetGame();
     }
-}
-
-/**
- * Displays the scores for both the user and AI frogs
- */
-function displayScores() {
-    push();
-    textSize(16);
-    textAlign(LEFT);
-    text(`Your Score: ${userScore}`, 10, 20);
-    for (let i = 0; i < aiScores.length; i++) {
-        text(`AI Frog ${i + 1} Score: ${aiScores[i]}`, 10, 40 + i * 20);
-    }
-    pop();
 }
